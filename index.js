@@ -22,28 +22,31 @@ module.exports = function (opts) {
   }
 
   // create sockets to send messages
-  for (var si = 0; si <= interfaces.length; si++) {
-    sendSockets[si] = dgram.createSocket({
-      type: type,
-      reuseAddr: opts.reuseAddr !== false,
-      toString: function () {
-        return type
-      }
-    })
+  for (var si = 0; si < interfaces.length; si++) {
+    (function (si) {
+      sendSockets[si] = dgram.createSocket({
+        type: type,
+        reuseAddr: opts.reuseAddr !== false,
+        toString: function () {
+          return type
+        }
+      })
 
-    sendSockets[si].on('listening', function () {
-      if (opts.multicast !== false) {
-        this.setMulticastTTL(opts.ttl || 255)
-        this.setMulticastLoopback(opts.loopback !== false)
-      }
-    })
+      sendSockets[si].on('listening', function () {
+        if (opts.multicast !== false) {
+          this.setMulticastInterface(interfaces[si])
+          this.setMulticastTTL(opts.ttl || 255)
+          this.setMulticastLoopback(opts.loopback !== false)
+        }
+      })
 
-    sendSockets[si].on('error', function (err) {
-      if (err.code === 'EACCES' || err.code === 'EADDRINUSE') that.emit('error', err)
-      else that.emit('warning', err)
-    })
+      sendSockets[si].on('error', function (err) {
+        if (err.code === 'EACCES' || err.code === 'EADDRINUSE') that.emit('error', err)
+        else that.emit('warning', err)
+      })
 
-    sendSockets[si].bind(port, interfaces[si] || null)
+      sendSockets[si].bind(port, interfaces[si] || null)
+    })(si)
   }
 
   // create socket to listen for messages
