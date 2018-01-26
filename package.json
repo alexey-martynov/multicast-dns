@@ -7,6 +7,9 @@
     "test": "standard && tape test.js"
   },
   "bin": "cli.js",
+  "engines": {  
+    "node": ">=8.6.0"
+  },
   "dependencies": {
     "dns-packet": "^1.0.1",
     "thunky": "^0.1.0"
